@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BMI 계산기</title>
+<style>
+  body {
+    font-family: "Malgun Gothic", Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background: #f2f2f2;
+  }
+  .card {
+    background: #fff;
+    padding: 30px 28px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    width: 280px;
+    text-align: center;
+  }
+  h1 {
+    font-size: 20px;
+    margin: 0 0 20px;
+  }
+  label {
+    display: block;
+    margin-top: 14px;
+    font-size: 14px;
+    color: #333;
+    text-align: left;
+  }
+  input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px;
+    margin-top: 4px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    text-align: center;
+  }
+  button {
+    width: 100%;
+    margin-top: 20px;
+    padding: 10px;
+    font-size: 15px;
+    border: none;
+    border-radius: 6px;
+    background: #4a90d9;
+    color: #fff;
+    cursor: pointer;
+  }
+  button:hover {
+    background: #3a7bc0;
+  }
+  #result {
+    margin-top: 18px;
+    font-size: 17px;
+    font-weight: bold;
+    min-height: 24px;
+  }
+  #advice {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #555;
+    line-height: 1.4;
+  }
+  #weather {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #4a90d9;
+    line-height: 1.4;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>BMI 계산기</h1>
+
+    <label for="height">키 (cm)</label>
+    <input type="number" id="height" placeholder="예: 170">
+
+    <label for="weight">몸무게 (kg)</label>
+    <input type="number" id="weight" placeholder="예: 65">
+
+    <label for="city">도시 (날씨 조회용)</label>
+    <input type="text" id="city" value="Seoul">
+
+    <button onclick="calculate()">계산하기</button>
+
+    <div id="result"></div>
+    <div id="advice"></div>
+    <div id="weather"></div>
+  </div>
+
+<script>
+  // OpenWeatherMap에서 발급받은 API 키를 아래에 넣으세요.
+  const OPENWEATHER_API_KEY = "여기에_발급받은_키를_넣으세요";
+
+  const ADVICE = {
+    "저체중": "끼니를 거르지 말고 단백질과 탄수화물을 충분히 챙겨 체중을 늘려보세요.",
+    "정상": "지금의 균형 잡힌 식습관과 운동 습관을 꾸준히 유지해주세요.",
+    "과체중": "간식과 야식을 줄이고 주 3회 이상 걷기 등 가벼운 운동을 시작해보세요.",
+    "비만": "식단 조절과 규칙적인 운동을 병행하고, 필요하다면 전문가 상담을 받아보세요.",
+    "고도비만": "건강에 위험할 수 있으니 병원을 방문해 전문적인 관리 계획을 세우는 것을 권장해요."
+  };
+
+  function classifyBmi(bmi) {
+    if (bmi < 18.5) return "저체중";
+    if (bmi < 23) return "정상";
+    if (bmi < 25) return "과체중";
+    if (bmi < 30) return "비만";
+    return "고도비만";
+  }
+
+  function weatherTip(temp, description) {
+    const summary = `${Math.round(temp)}°C, ${description}`;
+    if (description.includes("비") || description.includes("눈")) {
+      return `현재 ${summary}. 실내 운동을 고려해보세요.`;
+    }
+    if (temp >= 28) {
+      return `현재 ${summary}. 수분을 충분히 섭취하며 운동하세요.`;
+    }
+    if (temp <= 5) {
+      return `현재 ${summary}. 충분히 몸을 풀고 운동하세요.`;
+    }
+    return `현재 ${summary}. 야외 활동하기 좋은 날씨예요.`;
+  }
+
+  async function fetchWeather(city) {
+    const weatherEl = document.getElementById("weather");
+
+    if (!OPENWEATHER_API_KEY || OPENWEATHER_API_KEY.startsWith("여기에")) {
+      weatherEl.textContent = "날씨 정보를 사용하려면 스크립트의 OPENWEATHER_API_KEY를 설정해주세요.";
+      return;
+    }
+
+    weatherEl.textContent = "날씨 정보를 불러오는 중...";
+    const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${OPENWEATHER_API_KEY}&units=metric&lang=kr`;
+
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("weather fetch failed");
+      const data = await res.json();
+      weatherEl.textContent = weatherTip(data.main.temp, data.weather[0].description);
+    } catch (err) {
+      weatherEl.textContent = "날씨 정보를 가져올 수 없습니다. (API 키 또는 도시명을 확인하세요)";
+    }
+  }
+
+  function calculate() {
+    const heightCm = parseFloat(document.getElementById("height").value);
+    const weightKg = parseFloat(document.getElementById("weight").value);
+    const city = document.getElementById("city").value.trim() || "Seoul";
+    const resultEl = document.getElementById("result");
+    const adviceEl = document.getElementById("advice");
+
+    if (!heightCm || !weightKg || heightCm <= 0 || weightKg <= 0) {
+      resultEl.textContent = "키와 몸무게를 올바른 숫자로 입력해주세요.";
+      adviceEl.textContent = "";
+      document.getElementById("weather").textContent = "";
+      return;
+    }
+
+    const heightM = heightCm / 100;
+    const bmi = weightKg / (heightM * heightM);
+    const category = classifyBmi(bmi);
+
+    resultEl.textContent = `BMI: ${bmi.toFixed(1)}  (${category})`;
+    adviceEl.textContent = ADVICE[category];
+
+    fetchWeather(city);
+  }
+</script>
+</body>
+</html>
