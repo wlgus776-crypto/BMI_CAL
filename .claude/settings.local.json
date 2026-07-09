@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(run)",
+      "PowerShell(py *)",
+      "PowerShell(powershell -ExecutionPolicy Bypass -File \"C:\\\\Users\\\\홍지현\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-----Desktop-BMI-CAL\\\\f63d1a74-853e-4810-9aff-ff445b20f4cc\\\\scratchpad\\\\gui_test.ps1\")",
+      "PowerShell(powershell -ExecutionPolicy Bypass -File \"C:\\\\Users\\\\홍지현\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-----Desktop-BMI-CAL\\\\f63d1a74-853e-4810-9aff-ff445b20f4cc\\\\scratchpad\\\\gui_run_test.ps1\")",
+      "PowerShell(Start-Process -FilePath \"py\" -ArgumentList \"bmi_calculator.py\" -WorkingDirectory \"C:\\\\Users\\\\홍지현\\\\Desktop\\\\BMI_CAL\")"
+    ]
+  }
+}
